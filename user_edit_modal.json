@@ -1,0 +1,156 @@
+{
+	"type": "modal",
+	"title": {
+		"type": "plain_text",
+		"text": "",
+		"emoji": true
+	},
+	"close": {
+		"type": "plain_text",
+		"text": "Cancel",
+		"emoji": true
+	},
+	"submit": {
+		"type": "plain_text",
+		"text": "Save",
+		"emoji": true
+	},
+	"callback_id": "user_edit_modal_submit",
+	"private_metadata": "",
+	"blocks": [
+		{
+			"type": "divider"
+		},
+		{
+			"type": "input",
+			"block_id": "jobname",
+			"element": {
+				"type": "plain_text_input",
+				"action_id": "plain_text_input-action",
+				"initial_value": "",
+				"max_length": 20
+			},
+			"label": {
+				"type": "plain_text",
+				"text": "Job Name",
+				"emoji": true
+			}
+		},
+		{
+			"type": "section",
+			"block_id": "days",
+			"text": {
+				"type": "mrkdwn",
+				"text": "Select All Days Required"
+			},
+			"accessory": {
+				"type": "multi_static_select",
+				"placeholder": {
+					"type": "plain_text",
+					"text": "Select options",
+					"emoji": true
+				},
+				"options": [
+					{
+						"text": {
+							"type": "plain_text",
+							"text": "Monday",
+							"emoji": true
+						},
+						"value": "Monday"
+					},
+					{
+						"text": {
+							"type": "plain_text",
+							"text": "Tuesday",
+							"emoji": true
+						},
+						"value": "Tuesday"
+					},
+					{
+						"text": {
+							"type": "plain_text",
+							"text": "Wednesday",
+							"emoji": true
+						},
+						"value": "Wednesday"
+					},
+					{
+						"text": {
+							"type": "plain_text",
+							"text": "Thursday",
+							"emoji": true
+						},
+						"value": "Thursday"
+					},
+					{
+						"text": {
+							"type": "plain_text",
+							"text": "Friday",
+							"emoji": true
+						},
+						"value": "Friday"
+					},
+					{
+						"text": {
+							"type": "plain_text",
+							"text": "Saturday",
+							"emoji": true
+						},
+						"value": "Saturday"
+					},
+					{
+						"text": {
+							"type": "plain_text",
+							"text": "Sunday",
+							"emoji": true
+						},
+						"value": "Sunday"
+					}
+				],
+				"initial_options": [
+
+				],
+				"action_id": "selected"
+			}
+		},
+		{
+			"type": "section",
+			"block_id": "jobstatus",
+			"text": {
+				"type": "mrkdwn",
+				"text": "Set Job Status"
+			},
+			"accessory": {
+				"type": "radio_buttons",
+				"options": [
+					{
+						"text": {
+							"type": "plain_text",
+							"text": "Active",
+							"emoji": true
+						},
+						"value": "Active"
+					},
+					{
+						"text": {
+							"type": "plain_text",
+							"text": "Inactive",
+							"emoji": true
+						},
+						"value": "Inactive"
+					}
+				],
+				"initial_option": {
+					"text": {
+						"type": "plain_text",
+						"text": "Active",
+						"emoji": true
+					},
+					"value": "Active"
+				},
+				"action_id": "selected"
+			}
+		}
+	]
+}
