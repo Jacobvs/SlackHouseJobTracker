@@ -1,0 +1,11 @@
+{
+  "name": "SlackHouseJobTracker",
+  "description": "A simple job tracker for Slack",
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "repository": "https://github.com/Jacobvs/SlackHouseJobTracker",
+  "keywords": ["python", "slack" ],
+}
