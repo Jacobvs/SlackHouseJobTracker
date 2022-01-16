@@ -1,3 +1,4 @@
 slack-sdk
 slack-bolt
-pymongo
+pymongo[srv]
+jmespath
