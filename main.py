@@ -48,7 +48,7 @@ def user_edit_modal_submit(body, client, logger):
     values = body["view"]["state"]["values"]
     logger.info(values)
     uid = body["view"]["private_metadata"]
-    enabled = values['jobstatus']['selected']['value'] == 'Active'
+    enabled = values['jobstatus']['selected']['selected_option']['value'] == 'Active'
     job_name = values['jobname']['plain_text_input-action']['value']
     job_days = [d['value'] for d in values['days']['selected']['selected_options']]
     helpers.save_userdata(uid, enabled, job_name, job_days)
