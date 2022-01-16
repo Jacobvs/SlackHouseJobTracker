@@ -1,11 +1,33 @@
 import json
+import typing
 import slack_sdk.models
+
+class UserData:
+    def __init__(self, user_id: str, user_name: str, enabled: bool, job_name: str, job_days: list):
+        self.user_id = user_id
+        self.user_name = user_name
+        self.enabled = enabled
+        self.job_name = job_name
+        self.job_days = job_days
+
+    def __init__(self, user_id: str, json_data: dict):
+        self.user_id = user_id
+        self.user_name = json_data['user_name']
+        self.enabled = json_data['enabled']
+        self.job_name = json_data['job_name']
+        self.job_days = json_data['days']
+
+    def __hash__(self):
+        return self.user_id
+
+    def __eq__(self, other):
+        return self.user_id == other.user_id
+
 
 def add_user_blocks(user_name: str, user_id: str, enabled: bool, job_name: str, job_days: str):
     data = json.load(open('base_user_view.json'))
     data['fields'][0]['text'] = f"*{user_name}*"
     data['fields'][1]['text'] = f"Enabled:\t:white_check_mark:*" if enabled else f"*Enabled:\t:x:"
-    data['accessory']['action_id'] = f"{user_id}_edit_user"
     data['accessory']['value'] = user_id
 
     data['fields'][2]['text'] = f"_Job Name: {job_name}_"
@@ -25,12 +47,12 @@ def generate_users_modal(user_data: list):
     return data
 
 
-def generate_edit_modal(user_name: str, user_id: str, enabled: bool, job_name: str, job_days: list):
+def generate_edit_modal(user: UserData):
     data = json.load(open('user_edit_modal.json'))
-    data['title']['text'] = f"Edit {user_name}"
-    data['blocks'][1]['element']['initial_value'] = job_name
+    data['title']['text'] = f"Edit {user.user_name}"
+    data['blocks'][1]['element']['initial_value'] = user.job_name
 
-    for day in job_days:
+    for day in user.job_days:
         data['blocks'][2]['accessory']['initial_options'].append(
             {
                 "text": {
@@ -49,7 +71,7 @@ def generate_edit_modal(user_name: str, user_id: str, enabled: bool, job_name: s
                 "emoji": True
             },
             "value": "Active"
-        } if enabled else {
+        } if user.enabled else {
             "text": {
                 "type": "plain_text",
                 "text": "Inactive",
@@ -58,7 +80,7 @@ def generate_edit_modal(user_name: str, user_id: str, enabled: bool, job_name: s
             "value": "Inactive"
         }
 
-    data['private_metadata'] = user_id
+    data['private_metadata'] = user.user_id
 
     return data
 
@@ -69,8 +91,8 @@ def get_userdata(client: slack_sdk.WebClient):
                 ('deleted' not in u or not u['deleted']) and
                 u['id'] != 'USLACKBOT']
 
-    all_uids = [user['id'] for user in userlist]
-    populate_userdata(all_uids)
+    all_users = [(user['id'], user['profile']['real_name']) for user in userlist]
+    populate_userdata(all_users)
 
     jobdata = json.load(open('jobdata.json'))
 
@@ -87,12 +109,21 @@ def get_userdata(client: slack_sdk.WebClient):
 
     return data
 
+def get_all_saved_userdata() -> typing.Set[UserData]:
+    data = json.load(open('jobdata.json'))
+    users: set = set()
+    for uid in data:
+        users.add(UserData(uid, data[uid]))
+    return users
 
-def populate_userdata(all_uids: list):
+
+def populate_userdata(all_users: typing.List[typing.Tuple[str, str]]):
     data: dict = json.load(open('jobdata.json'))
-    for key in all_uids:
+    for user in all_users:
+        key, name = user
         if key not in data:
             data[key] = {
+                'user_name': name,
                 'enabled': False,
                 'job_name': 'N/A',
                 'days': []
@@ -107,9 +138,8 @@ def save_userdata(user_id: str, enabled: bool, job_name: str, job_days: list):
     data[user_id]['days'] = sort_days(job_days)
     json.dump(data, open('jobdata.json', 'w'), indent=4)
 
+
 def sort_days(days: list):
     days.sort(key=lambda x: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].index(x))
     return days
-
-
 

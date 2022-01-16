@@ -1,6 +1,9 @@
 import os
 import logging
 # Use the package we installed
+import typing
+
+import slack_sdk
 from slack_bolt import App
 import helpers
 
@@ -48,6 +51,14 @@ def user_edit_modal_submit(body, client, logger):
     job_days = values['days']['selected']
     helpers.save_userdata(uid, enabled, job_name, job_days)
 
+@app.action('edit_user')
+def edit_user(ack, body, client: slack_sdk.WebClient, logger):
+    ack()
+    res = client.views_open(
+        trigger_id=body["trigger_id"],
+        view=helpers.generate_edit_modal(user_data[body['actions']['value']])
+    )
+    logger.info(res)
 
 @app.event("app_mention")
 def event_test(body, say, logger):
@@ -58,6 +69,8 @@ def event_test(body, say, logger):
 def global_error_handler(error, body, logger):
     logger.exception(error)
     logger.info(body)
+
+user_data = helpers.get_all_saved_userdata()
 
 # Start your app
 if __name__ == "__main__":
