@@ -67,7 +67,7 @@ def generate_edit_modal(user_name: str, user_id: str, enabled: bool, job_name: s
 def get_userdata(client: slack_sdk.WebClient):
     userlist = client.users_list()['members']
 
-    all_uids = [user.id for user in userlist]
+    all_uids = [user['id'] for user in userlist]
     populate_userdata(all_uids)
 
     jobdata = json.load(open('jobdata.json'))
