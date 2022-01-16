@@ -61,4 +61,4 @@ def global_error_handler(error, body, logger):
 
 # Start your app
 if __name__ == "__main__":
-    app.start()
+    app.start(int(os.environ.get("PORT")))
