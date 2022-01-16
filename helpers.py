@@ -52,19 +52,22 @@ def generate_edit_modal(user: UserData):
     data['title']['text'] = f"Edit {user.user_name}"
     data['blocks'][1]['element']['initial_value'] = user.job_name
 
-    for day in user.job_days:
-        data['blocks'][2]['accessory']['initial_options'].append(
-            {
-                "text": {
-                    "type": "plain_text",
-                    "text": f"{day}",
-                    "emoji": True
-                },
-                "value": f"{day}"
-            }
-        )
+    if user.job_days:
+        days = []
+        for day in user.job_days:
+            days.append(
+                {
+                    "text": {
+                        "type": "plain_text",
+                        "text": f"{day}",
+                        "emoji": True
+                    },
+                    "value": f"{day}"
+                }
+            )
+        data['blocks'][2]['accessory']['initial_options'] = days
 
-    data['blocks'][3]['accessory']['initial_options'] = {
+    data['blocks'][3]['accessory']['initial_option'] = {
             "text": {
                 "type": "plain_text",
                 "text": "Active",
