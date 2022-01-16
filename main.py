@@ -56,7 +56,7 @@ def edit_user(ack, body, client: slack_sdk.WebClient, logger):
     ack()
     logger.info(f"Edit user {body['actions']['value']}")
     logger.info(user_data[body['actions']['value']])
-    res = client.views_open(
+    res = client.views_push(
         trigger_id=body["trigger_id"],
         view=helpers.generate_edit_modal(user_data[body['actions']['value']])
     )
