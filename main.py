@@ -35,6 +35,8 @@ def configure_jobs(body, client, ack, logger):
     # TODO: refresh user list with any missing users
     # TODO: Buttons - previous, next, done, cancel
     userdata = helpers.get_userdata(client)
+    global user_data
+    user_data = helpers.get_all_saved_userdata()
     res = client.views_open(
         trigger_id=body["trigger_id"],
         view=helpers.generate_users_modal(userdata)
@@ -81,7 +83,8 @@ def log_requests(client, context, logger, payload, next):
     logger.info(payload)
     next()
 
+user_data = helpers.get_all_saved_userdata()
 # Start your app
 if __name__ == "__main__":
-    user_data = helpers.get_all_saved_userdata()
+
     app.start(int(os.environ.get("PORT")))
