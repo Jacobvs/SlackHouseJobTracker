@@ -14,6 +14,8 @@ mongo_client = pymongo.MongoClient(
 user_db = mongo_client.SlackHouseJobs.userdata
 
 
+user_data = helpers.get_all_saved_userdata(user_db)
+
 logging.basicConfig(level=int(os.environ.get("LOGLEVEL")))
 
 # Set house manager uid (In slack: view full profile -> more -> copy member id)
@@ -41,12 +43,13 @@ def configure_jobs(body, client, ack, logger):
     # Send interactive message to the user
     # TODO: refresh user list with any missing users
     # TODO: Buttons - previous, next, done, cancel
-    userdata = helpers.get_userdata(user_data, client)
+    slackdata = helpers.get_slack_userdata(user_db, client)
+    # Refresh Cache
     global user_data
-    user_data = helpers.get_all_saved_userdata(user_data)
+    user_data = helpers.get_all_saved_userdata(user_db)
     res = client.views_open(
         trigger_id=body["trigger_id"],
-        view=helpers.generate_users_modal(userdata)
+        view=helpers.generate_users_modal(slackdata)
     )
     logger.info(res)
 
@@ -59,7 +62,7 @@ def user_edit_modal_submit(ack, body, client, logger):
     enabled = values['jobstatus']['selected']['selected_option']['value'] == 'Active'
     job_name = values['jobname']['plain_text_input-action']['value']
     job_days = [d['value'] for d in values['days']['selected']['selected_options']]
-    helpers.save_userdata(user_data, uid, enabled, job_name, job_days)
+    helpers.save_userdata(user_db, uid, enabled, job_name, job_days)
     global user_data
     user_data[uid].enabled = enabled
     user_data[uid].job_name = job_name
@@ -107,8 +110,6 @@ def log_requests(client, context, logger, payload, next):
     logger.info(payload)
     next()
 
-
-user_data = helpers.get_all_saved_userdata(user_db)
 # Start your app
 if __name__ == "__main__":
 

@@ -111,7 +111,7 @@ def generate_edit_modal(user: UserData):
     return data
 
 
-def get_userdata(user_db: pymongo.collection, client: slack_sdk.WebClient):
+def get_slack_userdata(user_db: pymongo.collection, client: slack_sdk.WebClient):
     userlist = client.users_list()['members']
     userlist = [u for u in userlist if u['is_bot'] is False and
                 ('deleted' not in u or not u['deleted']) and
