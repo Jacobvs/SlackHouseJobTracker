@@ -54,6 +54,8 @@ def user_edit_modal_submit(body, client, logger):
 @app.action('edit_user')
 def edit_user(ack, body, client: slack_sdk.WebClient, logger):
     ack()
+    logger.info(f"Edit user {body['actions']['value']}")
+    logger.info(user_data[body['actions']['value']])
     res = client.views_open(
         trigger_id=body["trigger_id"],
         view=helpers.generate_edit_modal(user_data[body['actions']['value']])
