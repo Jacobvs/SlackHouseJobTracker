@@ -66,6 +66,7 @@ def generate_edit_modal(user_name: str, user_id: str, enabled: bool, job_name: s
 
 def get_userdata(client: slack_sdk.WebClient):
     userlist = client.users_list()['members']
+    userlist = [u for u in userlist if u['is_bot'] is False and not u['is_deleted'] and u['id'] != 'USLACKBOT']
 
     all_uids = [user['id'] for user in userlist]
     populate_userdata(all_uids)
