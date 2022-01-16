@@ -79,7 +79,7 @@ def get_userdata(client: slack_sdk.WebClient):
             'user_id': user['id'],
             'enabled': jobdata[user['id']]['enabled'],
             'job_name': jobdata[user['id']]['job_name'],
-            'job_days': jobdata[user['id']]['days'].join(', ')
+            'job_days': ', '.join(jobdata[user['id']]['days'])
         }
         data.append(udata)
 
@@ -108,5 +108,6 @@ def save_userdata(user_id: str, enabled: bool, job_name: str, job_days: list):
 def sort_days(days: list):
     days.sort(key=lambda x: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].index(x))
     return days
+
 
 
