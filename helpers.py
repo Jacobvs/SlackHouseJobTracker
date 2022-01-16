@@ -87,7 +87,7 @@ def get_userdata(client: slack_sdk.WebClient):
 
 
 def populate_userdata(all_uids: list):
-    data: dict = json.load('jobdata.json')
+    data: dict = json.load(open('jobdata.json'))
     for key in all_uids:
         if key not in data:
             data[key] = {
