@@ -3,13 +3,13 @@ import slack_sdk.models
 
 def add_user_blocks(user_name: str, user_id: str, enabled: bool, job_name: str, job_days: str):
     data = json.load(open('base_user_view.json'))
-    data[0]['fields'][0]['text'] = f"*{user_name}*"
-    data[0]['fields'][1]['text'] = f"Enabled:\t:white_check_mark:" if enabled else f"Enabled:\t:x:"
-    data[0]['accessory']['action_id'] = f"{user_id}_edit_user"
-    data[0]['accessory']['value'] = user_id
+    data['fields'][0]['text'] = f"*{user_name}*"
+    data['fields'][1]['text'] = f"Enabled:\t:white_check_mark:*" if enabled else f"*Enabled:\t:x:"
+    data['accessory']['action_id'] = f"{user_id}_edit_user"
+    data['accessory']['value'] = user_id
 
-    data[1]['elements'][0]['text'] = f"Job Name: {job_name}"
-    data[1]['elements'][1]['text'] = f"Days: {job_days}"
+    data['fields'][2]['text'] = f"_Job Name: {job_name}_"
+    data['fields'][3]['text'] = f"_Days: {job_days}_"
     return data
 
 
@@ -20,8 +20,7 @@ def generate_users_modal(user_data: list):
         for user in user_data]
 
     for user_view in reversed(user_views):
-        data['blocks'].append(user_view[0])
-        data['blocks'].append(user_view[1])
+        data['blocks'].append(user_view)
 
     return data
 

@@ -1,40 +1,31 @@
-[
-  {
-    "type": "section",
-    "fields": [
-      {
-        "type": "mrkdwn",
-        "text": ""
-      },
-      {
-        "type": "plain_text",
-        "text": ""
-      }
-    ],
-    "accessory": {
-      "type": "button",
-      "text": {
-        "type": "plain_text",
-        "text": "Edit",
-        "emoji": true
-      },
-      "value": "",
-      "action_id": ""
+{
+  "type": "section",
+  "fields": [
+    {
+      "type": "mrkdwn",
+      "text": ""
+    },
+    {
+      "type": "plain_text",
+      "text": ""
+    },
+    {
+      "type": "plain_text",
+      "text": ""
+    },
+    {
+      "type": "plain_text",
+      "text": ""
     }
-  },
-  {
-    "type": "context",
-    "elements": [
-      {
-        "type": "plain_text",
-        "emoji": true,
-        "text": ""
-      },
-      {
-        "type": "plain_text",
-        "emoji": true,
-        "text": "Days: Tuesday, Thursday"
-      }
-    ]
+  ],
+  "accessory": {
+    "type": "button",
+    "text": {
+      "type": "plain_text",
+      "text": "Edit",
+      "emoji": true
+    },
+    "value": "",
+    "action_id": ""
   }
-]
+}
