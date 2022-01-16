@@ -117,6 +117,7 @@ def get_all_saved_userdata() -> typing.Dict[str, UserData]:
         data = json.load(open('jobdata.json', 'w+'))
     except json.decoder.JSONDecodeError:
         data = {}
+        json.dump(data, open('jobdata.json', 'w'))
     users = {}
     for uid in data:
         users[uid] = UserData(uid, data[uid])
