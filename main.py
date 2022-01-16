@@ -60,7 +60,6 @@ def user_edit_modal_submit(ack, body, client, logger):
 
     res = client.views_update(
         view_id=body["view"]["root_view_id"],
-        hash=body["view"]["hash"],
         view=helpers.generate_users_modal_dict(user_data)
     )
 
