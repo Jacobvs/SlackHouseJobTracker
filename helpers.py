@@ -113,7 +113,7 @@ def get_userdata(client: slack_sdk.WebClient):
     return data
 
 def get_all_saved_userdata() -> typing.Dict[str, UserData]:
-    data = json.load(open('jobdata.json', 'w+'))
+    data = json.load(open('jobdata.json'))
     users = {}
     for uid in data:
         users[uid] = UserData(uid, data[uid])
