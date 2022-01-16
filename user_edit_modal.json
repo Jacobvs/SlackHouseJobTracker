@@ -26,6 +26,7 @@
 			"block_id": "jobname",
 			"element": {
 				"type": "plain_text_input",
+				"action_id": "plain_text_input-action",
 				"initial_value": "",
 				"max_length": 20
 			},
@@ -106,7 +107,8 @@
 						},
 						"value": "Sunday"
 					}
-				]
+				],
+				"action_id": "selected"
 			}
 		},
 		{
@@ -143,7 +145,8 @@
 						"emoji": true
 					},
 					"value": "Active"
-				}
+				},
+				"action_id": "selected"
 			}
 		}
 	]
