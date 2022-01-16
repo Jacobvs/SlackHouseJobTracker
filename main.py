@@ -51,7 +51,7 @@ def user_edit_modal_submit(body, client, logger):
     job_days = values['days']['selected']
     helpers.save_userdata(uid, enabled, job_name, job_days)
 
-@app.action('edit_user')
+@app.action("edit_user")
 def edit_user(ack, body, client: slack_sdk.WebClient, logger):
     ack()
     logger.info(f"Edit user {body['actions']['value']}")
@@ -72,7 +72,13 @@ def global_error_handler(error, body, logger):
     logger.exception(error)
     logger.info(body)
 
+
 user_data = helpers.get_all_saved_userdata()
+
+@app.use
+def log_requests(client, context, logger, payload, next):
+    logger.info(payload)
+    next()
 
 # Start your app
 if __name__ == "__main__":

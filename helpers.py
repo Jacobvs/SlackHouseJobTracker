@@ -27,11 +27,11 @@ class UserData:
 def add_user_blocks(user_name: str, user_id: str, enabled: bool, job_name: str, job_days: str):
     data = json.load(open('base_user_view.json'))
     data['fields'][0]['text'] = f"*{user_name}*"
-    data['fields'][1]['text'] = f"Enabled:\t:white_check_mark:*" if enabled else f"*Enabled:\t:x:"
+    data['fields'][1]['text'] = f"*Enabled:\t:white_check_mark:*" if enabled else f"*Enabled:\t:x:*"
     data['accessory']['value'] = user_id
 
     data['fields'][2]['text'] = f"_Job Name: {job_name}_"
-    data['fields'][3]['text'] = f"_Days: {job_days}_"
+    data['fields'][3]['text'] = f"_Days: {job_days}_" if job_days else f"_Days: N/A_"
     return data
 
 
