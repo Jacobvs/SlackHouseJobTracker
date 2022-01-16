@@ -52,6 +52,11 @@ def user_edit_modal_submit(body, client, logger):
     job_name = values['jobname']['plain_text_input-action']['value']
     job_days = [d['value'] for d in values['days']['selected']['selected_options']]
     helpers.save_userdata(uid, enabled, job_name, job_days)
+    global user_data
+    user_data[uid].enabled = enabled
+    user_data[uid].job_name = job_name
+    user_data[uid].job_days = job_days
+
 
 @app.block_action("selected")
 def handle_selection(ack, body, client: slack_sdk.WebClient, logger):

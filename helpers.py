@@ -97,7 +97,7 @@ def get_userdata(client: slack_sdk.WebClient):
     all_users = [(user['id'], user['profile']['real_name']) for user in userlist]
     populate_userdata(all_users)
 
-    jobdata = json.load(open('jobdata.json'))
+    jobdata = json.load(open('jobdata.json', 'rw'))
 
     data = []
     for user in userlist:
@@ -113,7 +113,7 @@ def get_userdata(client: slack_sdk.WebClient):
     return data
 
 def get_all_saved_userdata() -> typing.Dict[str, UserData]:
-    data = json.load(open('jobdata.json'))
+    data = json.load(open('jobdata.json', 'rw'))
     users = {}
     for uid in data:
         users[uid] = UserData(uid, data[uid])
@@ -121,7 +121,7 @@ def get_all_saved_userdata() -> typing.Dict[str, UserData]:
 
 
 def populate_userdata(all_users: typing.List[typing.Tuple[str, str]]):
-    data: dict = json.load(open('jobdata.json'))
+    data: dict = json.load(open('jobdata.json', 'rw'))
     for user in all_users:
         key, name = user
         if key not in data:
@@ -135,7 +135,7 @@ def populate_userdata(all_users: typing.List[typing.Tuple[str, str]]):
     return data
 
 def save_userdata(user_id: str, enabled: bool, job_name: str, job_days: list):
-    data = json.load(open('jobdata.json'))
+    data = json.load(open('jobdata.json', 'rw'))
     data[user_id]['enabled'] = enabled
     data[user_id]['job_name'] = job_name
     data[user_id]['days'] = sort_days(job_days)
