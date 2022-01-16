@@ -4,7 +4,7 @@ import logging
 from slack_bolt import App
 import helpers
 
-logging.basicConfig(level=os.environ.get("LOGLEVEL"))
+logging.basicConfig(level=int(os.environ.get("LOGLEVEL")))
 
 # Set house manager uid (In slack: view full profile -> more -> copy member id)
 HOUSE_MANAGER_UID = os.environ.get("HOUSE_MANAGER_UID")
