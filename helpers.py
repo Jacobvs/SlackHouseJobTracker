@@ -39,7 +39,7 @@ def add_user_blocks(user_name: str, user_id: str, enabled: bool, job_name: str, 
     data['fields'][1]['text'] = f"*Enabled:\t:white_check_mark:*" if enabled else f"*Enabled:\t:x:*"
     data['accessory']['value'] = user_id
 
-    data['fields'][2]['text'] = f"_Job Name: {job_name}_"
+    data['fields'][2]['text'] = f"_Job Name: {job_name}_" if job_name else "_Job Name: N/A_"
     data['fields'][3]['text'] = f"_Days: {job_days}_" if job_days else f"_Days: N/A_"
     return data
 
@@ -149,7 +149,7 @@ def populate_userdata(all_users: typing.List[typing.Tuple[str, str]]):
             data[key] = {
                 'user_name': name,
                 'enabled': False,
-                'job_name': 'N/A',
+                'job_name': '',
                 'days': []
             }
     json.dump(data, open('jobdata.json', 'w'), indent=4)
