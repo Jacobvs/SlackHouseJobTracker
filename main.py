@@ -51,7 +51,8 @@ def user_edit_modal_submit(body, client, logger):
     job_days = values['days']['selected']
     helpers.save_userdata(uid, enabled, job_name, job_days)
 
-@app.action("edit_user")
+
+@app.block_action("edit_user")
 def edit_user(ack, body, client: slack_sdk.WebClient, logger):
     ack()
     logger.info(f"Edit user {body['actions']['value']}")
