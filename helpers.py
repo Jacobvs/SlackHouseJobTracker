@@ -23,6 +23,15 @@ class UserData:
     def __eq__(self, other):
         return self.user_id == other.user_id
 
+    def to_dict(self):
+        return {
+            'user_id': self.user_id,
+            'user_name': self.user_name,
+            'enabled': self.enabled,
+            'job_name': self.job_name,
+            'days': self.job_days
+        }
+
 
 def add_user_blocks(user_name: str, user_id: str, enabled: bool, job_name: str, job_days: str):
     data = json.load(open('base_user_view.json'))
@@ -32,6 +41,18 @@ def add_user_blocks(user_name: str, user_id: str, enabled: bool, job_name: str, 
 
     data['fields'][2]['text'] = f"_Job Name: {job_name}_"
     data['fields'][3]['text'] = f"_Days: {job_days}_" if job_days else f"_Days: N/A_"
+    return data
+
+
+def generate_users_modal_dict(user_data: typing.Dict[str, UserData]):
+    data = json.load(open('base_edit_modal.json'))
+    user_views = [
+        add_user_blocks(user.user_name, user.user_id, user.enabled, user.job_name, ", ".join(user.job_days))
+        for user in user_data.values()]
+
+    for user_view in reversed(user_views):
+        data['blocks'].append(user_view)
+
     return data
 
 

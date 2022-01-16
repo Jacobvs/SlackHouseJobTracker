@@ -58,6 +58,11 @@ def user_edit_modal_submit(ack, body, client, logger):
     user_data[uid].job_name = job_name
     user_data[uid].job_days = job_days
 
+    res = client.views_update(
+        view_id=body["view"]["id"],
+        view=helpers.generate_users_modal_dict(user_data)
+    )
+
 
 @app.block_action("selected")
 def handle_selection(ack, body, client: slack_sdk.WebClient, logger):
