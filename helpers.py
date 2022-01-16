@@ -121,7 +121,10 @@ def get_all_saved_userdata() -> typing.Dict[str, UserData]:
 
 
 def populate_userdata(all_users: typing.List[typing.Tuple[str, str]]):
-    data: dict = json.load(open('jobdata.json', 'w+'))
+    try:
+        data: dict = json.load(open('jobdata.json', 'w+'))
+    except json.decoder.JSONDecodeError:
+        data = {}
     for user in all_users:
         key, name = user
         if key not in data:
