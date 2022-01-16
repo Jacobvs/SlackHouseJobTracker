@@ -59,7 +59,8 @@ def user_edit_modal_submit(ack, body, client, logger):
     user_data[uid].job_days = job_days
 
     res = client.views_update(
-        view_id=body["view"]["id"],
+        view_id=body["view"]["root_view_id"],
+        hash=body["view"]["hash"],
         view=helpers.generate_users_modal_dict(user_data)
     )
 
