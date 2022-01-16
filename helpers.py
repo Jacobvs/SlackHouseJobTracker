@@ -50,7 +50,7 @@ def generate_users_modal_dict(user_data: typing.Dict[str, UserData]):
     data = json.load(open('base_edit_modal.json'))
     user_views = [
         add_user_blocks(user.user_name, user.user_id, user.enabled, user.job_name, ", ".join(user.job_days))
-        for user in user_data.values()]
+        for user in sorted(user_data.values(), key=lambda x: x.user_name)]
 
     for user_view in reversed(user_views):
         data['blocks'].append(user_view)
