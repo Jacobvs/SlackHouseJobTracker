@@ -1,5 +1,7 @@
 import json
 import typing
+
+import pymongo
 import slack_sdk.models
 
 class UserData:
@@ -10,8 +12,8 @@ class UserData:
         self.job_name = job_name
         self.job_days = job_days
 
-    def __init__(self, user_id: str, json_data: dict):
-        self.user_id = user_id
+    def __init__(self, json_data: dict):
+        self.user_id = json_data['user_id']
         self.user_name = json_data['user_name']
         self.enabled = json_data['enabled']
         self.job_name = json_data['job_name']
@@ -109,59 +111,56 @@ def generate_edit_modal(user: UserData):
     return data
 
 
-def get_userdata(client: slack_sdk.WebClient):
+def get_userdata(user_db: pymongo.collection, client: slack_sdk.WebClient):
     userlist = client.users_list()['members']
     userlist = [u for u in userlist if u['is_bot'] is False and
                 ('deleted' not in u or not u['deleted']) and
                 u['id'] != 'USLACKBOT']
 
     all_users = [(user['id'], user['profile']['real_name']) for user in userlist]
-    populate_userdata(all_users)
-
-    jobdata = json.load(open('jobdata.json'))
+    populate_userdata(user_db, all_users)
 
     data = []
     for user in userlist:
+        jobdata = user_db.find_one({'user_id': user['id']})
         udata = {
             'user_name': user['profile']['real_name'],
             'user_id': user['id'],
-            'enabled': jobdata[user['id']]['enabled'],
-            'job_name': jobdata[user['id']]['job_name'],
-            'job_days': ', '.join(jobdata[user['id']]['days'])
+            'enabled': jobdata['enabled'],
+            'job_name': jobdata['job_name'],
+            'job_days': ', '.join(jobdata['days'])
         }
         data.append(udata)
 
     return data
 
-def get_all_saved_userdata() -> typing.Dict[str, UserData]:
-    data = json.load(open('jobdata.json'))
+def get_all_saved_userdata(user_db: pymongo.collection) -> typing.Dict[str, UserData]:
     users = {}
-    for uid in data:
-        users[uid] = UserData(uid, data[uid])
+    for user in user_db.find():
+        users[user['user_id']] = UserData(user)
+
     return users
 
 
-def populate_userdata(all_users: typing.List[typing.Tuple[str, str]]):
-    data: dict = json.load(open('jobdata.json'))
+def populate_userdata(user_db: pymongo.collection, all_users: typing.List[typing.Tuple[str, str]]):
     for user in all_users:
         key, name = user
-        if key not in data:
-            data[key] = {
+        if not user_db.find_one({'user_id': key}):
+            user_db.insert_one({
+                'user_id': key,
                 'user_name': name,
                 'enabled': False,
                 'job_name': '',
                 'days': []
-            }
-    json.dump(data, open('jobdata.json', 'w'), indent=4)
-    return data
+            })
 
-def save_userdata(user_id: str, enabled: bool, job_name: str, job_days: list):
-    data = json.load(open('jobdata.json'))
-    data[user_id]['enabled'] = enabled
-    data[user_id]['job_name'] = job_name
-    data[user_id]['days'] = sort_days(job_days)
-    json.dump(data, open('jobdata.json', 'w'), indent=4)
 
+def save_userdata(user_db: pymongo.collection, user_id: str, enabled: bool, job_name: str, job_days: list):
+    user_db.find_one_and_update({'user_id': user_id}, {'$set': {
+        'enabled': enabled,
+        'job_name': job_name,
+        'days': sort_days(job_days)
+    }})
 
 def sort_days(days: list):
     days.sort(key=lambda x: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].index(x))

@@ -6,6 +6,13 @@ import typing
 import slack_sdk
 from slack_bolt import App
 import helpers
+import pymongo
+
+mongo_client = pymongo.MongoClient(
+    f"mongodb+srv://{os.environ.get('MONGO_USERNAME')}:{os.environ.get('MONGO_PW')}"
+    f"@cluster0.9esex.mongodb.net/SlackHouseJobs?retryWrites=true&w=majority")
+user_db = mongo_client.SlackHouseJobs.userdata
+
 
 logging.basicConfig(level=int(os.environ.get("LOGLEVEL")))
 
@@ -34,9 +41,9 @@ def configure_jobs(body, client, ack, logger):
     # Send interactive message to the user
     # TODO: refresh user list with any missing users
     # TODO: Buttons - previous, next, done, cancel
-    userdata = helpers.get_userdata(client)
+    userdata = helpers.get_userdata(user_data, client)
     global user_data
-    user_data = helpers.get_all_saved_userdata()
+    user_data = helpers.get_all_saved_userdata(user_data)
     res = client.views_open(
         trigger_id=body["trigger_id"],
         view=helpers.generate_users_modal(userdata)
@@ -52,7 +59,7 @@ def user_edit_modal_submit(ack, body, client, logger):
     enabled = values['jobstatus']['selected']['selected_option']['value'] == 'Active'
     job_name = values['jobname']['plain_text_input-action']['value']
     job_days = [d['value'] for d in values['days']['selected']['selected_options']]
-    helpers.save_userdata(uid, enabled, job_name, job_days)
+    helpers.save_userdata(user_data, uid, enabled, job_name, job_days)
     global user_data
     user_data[uid].enabled = enabled
     user_data[uid].job_name = job_name
@@ -69,6 +76,7 @@ def handle_selection(ack, body, client: slack_sdk.WebClient, logger):
     ack()
     logger.info(body)
 
+
 @app.block_action("edit_user")
 def edit_user(ack, body, client: slack_sdk.WebClient, logger):
     ack()
@@ -81,10 +89,12 @@ def edit_user(ack, body, client: slack_sdk.WebClient, logger):
     )
     logger.info(res)
 
+
 @app.event("app_mention")
 def event_test(body, say, logger):
     logger.info(body)
     say("Do your house job already and stop bothering me :clown:")
+
 
 @app.error
 def global_error_handler(error, body, logger):
@@ -97,7 +107,8 @@ def log_requests(client, context, logger, payload, next):
     logger.info(payload)
     next()
 
-user_data = helpers.get_all_saved_userdata()
+
+user_data = helpers.get_all_saved_userdata(user_db)
 # Start your app
 if __name__ == "__main__":
 
