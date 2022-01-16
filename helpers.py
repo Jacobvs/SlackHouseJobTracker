@@ -64,7 +64,7 @@ def generate_edit_modal(user: UserData):
             }
         )
 
-    data['blocks'][3]['accessory']['initial_option'] = {
+    data['blocks'][3]['accessory']['initial_options'] = {
             "text": {
                 "type": "plain_text",
                 "text": "Active",
