@@ -14,7 +14,7 @@ mongo_client = pymongo.MongoClient(
 user_db = mongo_client.SlackHouseJobs.userdata
 
 
-user_data = helpers.get_all_saved_userdata(user_db)
+user_cache = helpers.get_all_saved_userdata(user_db)
 
 logging.basicConfig(level=int(os.environ.get("LOGLEVEL")))
 
@@ -43,14 +43,37 @@ def configure_jobs(body, client, ack, logger):
     # Send interactive message to the user
     # TODO: refresh user list with any missing users
     # TODO: Buttons - previous, next, done, cancel
-    slackdata = helpers.get_slack_userdata(user_db, client)
-    # Refresh Cache
-    global user_data
-    user_data = helpers.get_all_saved_userdata(user_db)
     res = client.views_open(
         trigger_id=body["trigger_id"],
-        view=helpers.generate_users_modal(slackdata)
+        view={
+            "type": "modal",
+            "title": {
+                "type": "plain_text",
+                "text": "Edit Users"
+            },
+            "close": {
+                "type": "plain_text",
+                "text": "Cancel"
+            },
+            "blocks": [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "Loading... Please wait."
+                    }
+                }
+            ]
+        })
+    slackdata = helpers.get_slack_userdata(user_db, client)
+    view = helpers.generate_users_modal(slackdata, body['channel_id'])
+    res = client.views_update(
+        view_id=res["view"]["id"],
+        view=view
     )
+    # Refresh Cache
+    global user_cache
+    user_cache = helpers.get_all_saved_userdata(user_db)
     logger.info(res)
 
 @app.view('user_edit_modal_submit')
@@ -58,20 +81,32 @@ def user_edit_modal_submit(ack, body, client, logger):
     ack()
     values = body["view"]["state"]["values"]
     logger.info(values)
-    uid = body["view"]["private_metadata"]
+    uid = body["view"]["private_metadata"].split(",")[0]
     enabled = values['jobstatus']['selected']['selected_option']['value'] == 'Active'
     job_name = values['jobname']['plain_text_input-action']['value']
     job_days = [d['value'] for d in values['days']['selected']['selected_options']]
     helpers.save_userdata(user_db, uid, enabled, job_name, job_days)
-    global user_data
-    user_data[uid].enabled = enabled
-    user_data[uid].job_name = job_name
-    user_data[uid].job_days = job_days
+    global user_cache
+    user_cache[uid].enabled = enabled
+    user_cache[uid].job_name = job_name
+    user_cache[uid].job_days = job_days
+    try:
+        res = client.views_update(
+            view_id=body["view"]["root_view_id"],
+            view=helpers.generate_users_modal_dict(user_cache,
+                ref_channel_id=body["view"]["private_metadata"].split(",")[1])
+                if ',' in body["view"]["private_metadata"] else
+                body["view"]["private_metadata"]
+        )
+    except slack_sdk.errors.SlackApiError:
+        pass
 
-    res = client.views_update(
-        view_id=body["view"]["root_view_id"],
-        view=helpers.generate_users_modal_dict(user_data)
-    )
+@app.view({'type': 'view_closed', 'callback_id': 'userlist', 'view': {'type': 'modal'}})
+def userlist(ack, body, client: slack_sdk.WebClient, logger):
+    ack()
+    client.chat_postMessage(channel=body["view"]["private_metadata"],
+                            blocks=helpers.get_closed_message(user_cache))
+    logger.info(body)
 
 
 @app.block_action("selected")
@@ -85,10 +120,12 @@ def edit_user(ack, body, client: slack_sdk.WebClient, logger):
     ack()
     logger.info(body['actions'])
     logger.info(f"Edit user {body['actions'][0]['value']}")
-    logger.info(user_data[body['actions'][0]['value']])
+    logger.info(user_cache[body['actions'][0]['value']])
+    view = helpers.generate_edit_modal(user_cache[body['actions'][0]['value']])
+    view["private_metadata"] += "," + body['view']['private_metadata']
     res = client.views_push(
         trigger_id=body["trigger_id"],
-        view=helpers.generate_edit_modal(user_data[body['actions'][0]['value']])
+        view=view
     )
     logger.info(res)
 
@@ -112,5 +149,4 @@ def log_requests(client, context, logger, payload, next):
 
 # Start your app
 if __name__ == "__main__":
-
     app.start(int(os.environ.get("PORT")))

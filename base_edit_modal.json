@@ -14,5 +14,7 @@
 		{
 			"type": "divider"
 		}
-	]
+	],
+	"notify_on_close": true,
+	"callback_id": "userlist"
 }

@@ -46,7 +46,7 @@ def add_user_blocks(user_name: str, user_id: str, enabled: bool, job_name: str, 
     return data
 
 
-def generate_users_modal_dict(user_data: typing.Dict[str, UserData]):
+def generate_users_modal_dict(user_data: typing.Dict[str, UserData], ref_channel_id: str):
     data = json.load(open('base_edit_modal.json'))
     user_views = [
         add_user_blocks(user.user_name, user.user_id, user.enabled, user.job_name, ", ".join(user.job_days))
@@ -55,10 +55,12 @@ def generate_users_modal_dict(user_data: typing.Dict[str, UserData]):
     for user_view in reversed(user_views):
         data['blocks'].append(user_view)
 
+    data['private_metadata'] = ref_channel_id
+
     return data
 
 
-def generate_users_modal(user_data: list):
+def generate_users_modal(user_data: list, ref_channel_id: str):
     data = json.load(open('base_edit_modal.json'))
     user_views = [
         add_user_blocks(user['user_name'], user['user_id'], user['enabled'], user['job_name'], user['job_days'])
@@ -66,6 +68,8 @@ def generate_users_modal(user_data: list):
 
     for user_view in reversed(user_views):
         data['blocks'].append(user_view)
+
+    data['private_metadata'] = ref_channel_id
 
     return data
 
@@ -141,6 +145,23 @@ def get_all_saved_userdata(user_db: pymongo.collection) -> typing.Dict[str, User
 
     return users
 
+def get_closed_message(user_cache: typing.Dict[str, UserData]) -> dict:
+    enabled_users = sorted([user for user in user_cache.values() if user.enabled], key=lambda x: x.user_name.upper())
+    data = json.load(open('closed_settings_message.json'))
+    data[3]['text']['text'] = f"Users Enabled:\t{len(enabled_users)}/{len(user_cache)}"
+
+    section = {"type": "section", "fields": []}
+    for i, user in enumerate(enabled_users):
+        section['fields'].append({
+            "type": "mrkdwn",
+            "text": f"<@{user.user_id}> {user.job_name} - {', '.join(user.job_days) if user.job_days else 'N/A'}"
+        })
+        if i % 10 == 0:
+            data.append(section)
+            section = {"type": "section", "fields": []}
+
+    return data
+
 
 def populate_userdata(user_db: pymongo.collection, all_users: typing.List[typing.Tuple[str, str]]):
     for user in all_users:
@@ -166,3 +187,11 @@ def sort_days(days: list):
     days.sort(key=lambda x: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].index(x))
     return days
 
+def users_by_days(user_db: pymongo.collection, days: list) -> typing.Dict[str, UserData]:
+    daily_users = {}
+    for user in user_db.find():
+        if user['enabled'] and user['days']:
+            for day in user['days']:
+                if day not in daily_users:
+                    daily_users[day] = []
+                daily_users[day].append(user['user_id'])

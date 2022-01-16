@@ -1,0 +1,33 @@
+[
+  {
+    "type": "divider"
+  },
+  {
+    "type": "context",
+    "elements": [
+      {
+        "type": "image",
+        "image_url": "https://cdn1.iconfinder.com/data/icons/text-editor-2-1/64/check_mark_folder_save-400.png",
+        "alt_text": "Saved"
+      },
+      {
+        "type": "mrkdwn",
+        "text": "*Saved.* Your changes have been updated."
+      }
+    ]
+  },
+  {
+    "type": "divider"
+  },
+  {
+    "type": "header",
+    "text": {
+      "type": "plain_text",
+      "text": "Users Enabled:\t20",
+      "emoji": true
+    }
+  },
+  {
+    "type": "divider"
+  }
+]
