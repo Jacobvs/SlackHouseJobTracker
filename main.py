@@ -55,12 +55,12 @@ def user_edit_modal_submit(body, client, logger):
 @app.block_action("edit_user")
 def edit_user(ack, body, client: slack_sdk.WebClient, logger):
     ack()
-    logger.info(body)
-    logger.info(f"Edit user {body['value']}")
-    logger.info(user_data[body['value']])
+    logger.info(body['actions'])
+    logger.info(f"Edit user {body['actions'][0]['value']}")
+    logger.info(user_data[body['actions'][0]['value']])
     res = client.views_push(
         trigger_id=body["trigger_id"],
-        view=helpers.generate_edit_modal(user_data[body['value']])
+        view=helpers.generate_edit_modal(user_data[body['actions'][0]['value']])
     )
     logger.info(res)
 
@@ -75,7 +75,6 @@ def global_error_handler(error, body, logger):
     logger.info(body)
 
 
-user_data = helpers.get_all_saved_userdata()
 
 @app.use
 def log_requests(client, context, logger, payload, next):
@@ -84,4 +83,5 @@ def log_requests(client, context, logger, payload, next):
 
 # Start your app
 if __name__ == "__main__":
+    user_data = helpers.get_all_saved_userdata()
     app.start(int(os.environ.get("PORT")))
