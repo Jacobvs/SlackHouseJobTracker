@@ -44,7 +44,8 @@ def configure_jobs(body, client, ack, logger):
     logger.info(res)
 
 @app.view('user_edit_modal_submit')
-def user_edit_modal_submit(body, client, logger):
+def user_edit_modal_submit(ack, body, client, logger):
+    ack()
     values = body["view"]["state"]["values"]
     logger.info(values)
     uid = body["view"]["private_metadata"]
@@ -84,7 +85,6 @@ def event_test(body, say, logger):
 def global_error_handler(error, body, logger):
     logger.exception(error)
     logger.info(body)
-
 
 
 @app.use
