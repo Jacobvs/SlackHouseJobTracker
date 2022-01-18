@@ -104,6 +104,9 @@ def generate_edit_modal(user: UserData):
             "value": "Inactive"
         }
 
+    if user.job_tasks:
+        data['blocks'][4]['initial_value'] = "\n".join(user.job_tasks)
+
     data['private_metadata'] = user.user_id
 
     return data
