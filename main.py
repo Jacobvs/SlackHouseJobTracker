@@ -13,7 +13,6 @@ mongo_client = pymongo.MongoClient(
     f"@cluster0.9esex.mongodb.net/SlackHouseJobs?retryWrites=true&w=majority")
 user_db = mongo_client.SlackHouseJobs.userdata
 
-
 user_cache = helpers.get_all_saved_userdata(user_db)
 
 logging.basicConfig(level=int(os.environ.get("LOGLEVEL")))
@@ -77,15 +76,27 @@ def configure_jobs(body, client, ack, logger):
     logger.info(res)
 
 @app.view('user_edit_modal_submit')
-def user_edit_modal_submit(ack, body, client, logger):
-    ack()
+def user_edit_modal_submit(ack, body, client: slack_sdk.WebClient, logger):
     values = body["view"]["state"]["values"]
     logger.info(values)
+
+    # Validate user task input
+    tasks: str = values['tasks']['plain_text_input_action']
+    if not tasks:
+        res = ack(options={
+              "response_action": "errors",
+              "errors": {
+                "tasks": "Please enter at least one task, with a new line between each task."
+              }
+        })
+    else: ack()
+
+    tasks: list = tasks.split("\n")
     uid = body["view"]["private_metadata"].split(",")[0]
     enabled = values['jobstatus']['selected']['selected_option']['value'] == 'Active'
     job_name = values['jobname']['plain_text_input-action']['value']
     job_days = [d['value'] for d in values['days']['selected']['selected_options']]
-    helpers.save_userdata(user_db, uid, enabled, job_name, job_days)
+    helpers.save_userdata(user_db, uid, enabled, job_name, job_days, tasks)
     global user_cache
     user_cache[uid].enabled = enabled
     user_cache[uid].job_name = job_name
@@ -93,7 +104,7 @@ def user_edit_modal_submit(ack, body, client, logger):
     try:
         res = client.views_update(
             view_id=body["view"]["root_view_id"],
-            view=helpers.generate_users_modal_dict(user_cache,
+            view=helpers.generate_users_modal(user_cache,
                 ref_channel_id=body["view"]["private_metadata"].split(",")[1])
                 if ',' in body["view"]["private_metadata"] else
                 body["view"]["private_metadata"]

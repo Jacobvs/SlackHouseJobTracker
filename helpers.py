@@ -5,12 +5,13 @@ import pymongo
 import slack_sdk.models
 
 class UserData:
-    def __init__(self, user_id: str, user_name: str, enabled: bool, job_name: str, job_days: list):
+    def __init__(self, user_id: str, user_name: str, enabled: bool, job_name: str, job_days: list, job_tasks: list):
         self.user_id = user_id
         self.user_name = user_name
         self.enabled = enabled
         self.job_name = job_name
         self.job_days = job_days
+        self.job_tasks = job_tasks
 
     def __init__(self, json_data: dict):
         self.user_id = json_data['user_id']
@@ -18,6 +19,7 @@ class UserData:
         self.enabled = json_data['enabled']
         self.job_name = json_data['job_name']
         self.job_days = json_data['days']
+        self.job_tasks = json_data['tasks']
 
     def __hash__(self):
         return self.user_id
@@ -31,7 +33,8 @@ class UserData:
             'user_name': self.user_name,
             'enabled': self.enabled,
             'job_name': self.job_name,
-            'days': self.job_days
+            'days': self.job_days,
+            'tasks': self.job_tasks
         }
 
 
@@ -46,25 +49,16 @@ def add_user_blocks(user_name: str, user_id: str, enabled: bool, job_name: str, 
     return data
 
 
-def generate_users_modal_dict(user_data: typing.Dict[str, UserData], ref_channel_id: str):
+def generate_users_modal(user_data: typing.Union[list, typing.Dict[str, UserData]], ref_channel_id: str):
     data = json.load(open('base_edit_modal.json'))
-    user_views = [
-        add_user_blocks(user.user_name, user.user_id, user.enabled, user.job_name, ", ".join(user.job_days))
-        for user in sorted(user_data.values(), key=lambda x: x.user_name.upper(), reverse=True)]
-
-    for user_view in reversed(user_views):
-        data['blocks'].append(user_view)
-
-    data['private_metadata'] = ref_channel_id
-
-    return data
-
-
-def generate_users_modal(user_data: list, ref_channel_id: str):
-    data = json.load(open('base_edit_modal.json'))
-    user_views = [
-        add_user_blocks(user['user_name'], user['user_id'], user['enabled'], user['job_name'], user['job_days'])
-        for user in sorted(user_data, key=lambda x: x['user_name'].upper(), reverse=True)]
+    if isinstance(user_data, dict):
+        user_views = [
+            add_user_blocks(user.user_name, user.user_id, user.enabled, user.job_name, ", ".join(user.job_days))
+            for user in sorted(user_data.values(), key=lambda x: x.user_name.upper(), reverse=True)]
+    else:
+        user_views = [
+            add_user_blocks(user['user_name'], user['user_id'], user['enabled'], user['job_name'], user['job_days'])
+            for user in sorted(user_data, key=lambda x: x['user_name'].upper(), reverse=True)]
 
     for user_view in reversed(user_views):
         data['blocks'].append(user_view)
@@ -132,7 +126,8 @@ def get_slack_userdata(user_db: pymongo.collection, client: slack_sdk.WebClient)
             'user_id': user['id'],
             'enabled': jobdata['enabled'],
             'job_name': jobdata['job_name'],
-            'job_days': ', '.join(jobdata['days'])
+            'job_days': ', '.join(jobdata['days']),
+            'tasks': jobdata['tasks']
         }
         data.append(udata)
 
@@ -172,15 +167,17 @@ def populate_userdata(user_db: pymongo.collection, all_users: typing.List[typing
                 'user_name': name,
                 'enabled': False,
                 'job_name': '',
-                'days': []
+                'days': [],
+                'tasks': []
             })
 
 
-def save_userdata(user_db: pymongo.collection, user_id: str, enabled: bool, job_name: str, job_days: list):
+def save_userdata(user_db: pymongo.collection, user_id: str, enabled: bool, job_name: str, job_days: list, tasks: list):
     user_db.find_one_and_update({'user_id': user_id}, {'$set': {
         'enabled': enabled,
         'job_name': job_name,
-        'days': sort_days(job_days)
+        'days': sort_days(job_days),
+        'tasks': tasks
     }})
 
 def sort_days(days: list):
