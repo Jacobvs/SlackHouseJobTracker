@@ -101,6 +101,7 @@ def user_edit_modal_submit(ack, body, client: slack_sdk.WebClient, logger):
     user_cache[uid].enabled = enabled
     user_cache[uid].job_name = job_name
     user_cache[uid].job_days = job_days
+    user_cache[uid].job_tasks = tasks
     try:
         res = client.views_update(
             view_id=body["view"]["root_view_id"],
