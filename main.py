@@ -81,7 +81,7 @@ def user_edit_modal_submit(ack, body, client: slack_sdk.WebClient, logger):
     logger.info(values)
 
     # Validate user task input
-    tasks: str = values['tasks']['plain_text_input_action']
+    tasks: str = values['tasks']['plain_text_input-action']['value']
     if not tasks:
         res = ack(options={
               "response_action": "errors",
