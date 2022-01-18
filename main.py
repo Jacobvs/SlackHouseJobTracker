@@ -64,15 +64,13 @@ def configure_jobs(body, client, ack, logger):
                 }
             ]
         })
-    slackdata = helpers.get_slack_userdata(user_db, client)
-    view = helpers.generate_users_modal(slackdata, body['channel_id'])
+    global user_cache
+    user_cache = helpers.get_slack_userdata(user_cache, user_db, client)
+    view = helpers.generate_users_modal(user_cache, body['channel_id'])
     res = client.views_update(
         view_id=res["view"]["id"],
         view=view
     )
-    # Refresh Cache
-    global user_cache
-    user_cache = helpers.get_all_saved_userdata(user_db)
     logger.info(res)
 
 @app.view('user_edit_modal_submit')

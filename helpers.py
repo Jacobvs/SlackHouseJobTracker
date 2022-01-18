@@ -49,7 +49,7 @@ def add_user_blocks(user_name: str, user_id: str, enabled: bool, job_name: str, 
     return data
 
 
-def generate_users_modal(user_data: typing.Union[list, typing.Dict[str, UserData]], ref_channel_id: str):
+def generate_users_modal(user_data: typing.Dict[str, UserData], ref_channel_id: str):
     data = json.load(open('base_edit_modal.json'))
     if isinstance(user_data, dict):
         user_views = [
@@ -112,29 +112,17 @@ def generate_edit_modal(user: UserData):
     return data
 
 
-def get_slack_userdata(user_db: pymongo.collection, client: slack_sdk.WebClient):
+def get_slack_userdata(user_cache: typing.Dict[str, UserData], user_db: pymongo.collection, client: slack_sdk.WebClient):
     userlist = client.users_list()['members']
     userlist = [u for u in userlist if u['is_bot'] is False and
                 ('deleted' not in u or not u['deleted']) and
                 u['id'] != 'USLACKBOT']
 
     all_users = [(user['id'], user['profile']['real_name']) for user in userlist]
-    populate_userdata(user_db, all_users)
+    new_users = [user for user in all_users if user[0] not in user_cache]
+    updated_user_cache = populate_userdata(user_cache, user_db, new_users)
 
-    data = []
-    for user in userlist:
-        jobdata = user_db.find_one({'user_id': user['id']})
-        udata = {
-            'user_name': user['profile']['real_name'],
-            'user_id': user['id'],
-            'enabled': jobdata['enabled'],
-            'job_name': jobdata['job_name'],
-            'job_days': ', '.join(jobdata['days']),
-            'tasks': jobdata['tasks']
-        }
-        data.append(udata)
-
-    return data
+    return updated_user_cache
 
 def get_all_saved_userdata(user_db: pymongo.collection) -> typing.Dict[str, UserData]:
     users = {}
@@ -161,8 +149,8 @@ def get_closed_message(user_cache: typing.Dict[str, UserData]) -> dict:
     return data
 
 
-def populate_userdata(user_db: pymongo.collection, all_users: typing.List[typing.Tuple[str, str]]):
-    for user in all_users:
+def populate_userdata(user_cache: typing.Dict[str, UserData], user_db: pymongo.collection, new_users: typing.List[typing.Tuple[str, str]]):
+    for user in new_users:
         key, name = user
         if not user_db.find_one({'user_id': key}):
             user_db.insert_one({
@@ -173,7 +161,8 @@ def populate_userdata(user_db: pymongo.collection, all_users: typing.List[typing
                 'days': [],
                 'tasks': []
             })
-
+            user_cache[key] = UserData(key, name, False, '', [], [])
+    return user_cache
 
 def save_userdata(user_db: pymongo.collection, user_id: str, enabled: bool, job_name: str, job_days: list, tasks: list):
     user_db.find_one_and_update({'user_id': user_id}, {'$set': {
