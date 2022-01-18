@@ -105,7 +105,7 @@ def generate_edit_modal(user: UserData):
         }
 
     if user.job_tasks:
-        data['blocks'][4]['initial_value'] = "\n".join(user.job_tasks)
+        data['blocks'][4]['element']['initial_value'] = "\n".join(user.job_tasks)
 
     data['private_metadata'] = user.user_id
 
