@@ -143,7 +143,7 @@ def edit_user(ack, body, client: slack_sdk.WebClient, logger):
 @app.event("app_mention")
 def event_test(body, say, logger):
     logger.info(body)
-    say("Do your house job already and stop bothering me :clown:")
+    say(text="Do your house job already and stop bothering me :clown:", channel=body["event"]["channel"])
 
 
 @app.error
